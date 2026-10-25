@@ -164,7 +164,7 @@
       <span class="grow"></span>
       <span class="chip" id="nss-chart-now">–</span>
     </div>
-    <div class="h-val"><span id="k-conn">–</span><span class="u">个 ECM 卸载到硬件的会话</span></div>
+    <div class="h-val"><span id="k-conn">–</span><span class="u">条连接已交由 NSS 硬件转发</span></div>
     <div class="h-sub" id="k-conn-sub">–</div>
     <canvas id="nss-chart" style="width:100%;height:150px;display:block"></canvas>
   </div>
@@ -237,9 +237,11 @@
   </summary>
   <div class="nss-note-body">
     <p>NSS 由 ECM 引擎自动接管加速，无需在防火墙页开启「流量分载」。</p>
+    <p><b>术语：「卸载 / offload」</b>指把数据包转发工作从主 CPU 移交给 NSS 硬件加速核处理，与「卸载软件」无关；
+    防火墙页的「流量分载」是软件层的同类概念。「加速连接数」即已被交由硬件转发的连接数。</p>
     <p><b>加速连接数</b>是唯一可直接读到的加速指标：实测随转发流量增长（22→37），持续增长即表示转发在走硬件。</p>
     <p><b>NSS↔主机吞吐</b>取自 n2h 计数，统计的是需要交给主机处理的包（未走快路径）；
-    已完全卸载到硬件的快路径包不经过主机，也不产生字节计数，因此固件层读不到「加速吞吐」本身。</p>
+    已完全走硬件快路径的包不经过主机，也不产生字节计数，因此固件层读不到「加速吞吐」本身。</p>
     <p style="opacity:.75">注：<b>CPU 负载</b>为驱动上报值。实测加压 10MB/s 转发时该值仍恒为 8%（min/avg/max 完全相同）——
     NSS 固件未上报指令数，<code>nss_freq_compute_cpu_usage()</code> 在 <code>inst_cnt==0</code> 时直接返回，
     数值停在开机初值，本版本仅供参考。</p>
