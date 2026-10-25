@@ -1,53 +1,168 @@
 <%+header%>
-<h2 name="content"><%:NSS 硬件加速%>
-  <small style="float:right;font-size:12.5px;color:#8d9aa5;font-weight:400;line-height:34px">
-    每 2 秒刷新<span id="nss-upd"></span>
-  </small>
-</h2>
+<div id="nss-wrap" class="nss-wrap">
+<div class="nss-head">
+  <h2 name="content"><%:NSS 硬件加速%></h2>
+  <div class="nss-live">
+    <span class="nss-pulse" id="nss-pulse"></span>
+    <span>实时 · 每 2 秒刷新</span>
+    <span id="nss-upd" class="nss-upd"></span>
+  </div>
+</div>
 
 <style>
-.nss-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:14px}
-.nss-card{background:#fff;border:1px solid #e2e2e2;border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;min-width:0}
-.nss-card .lbl{font-size:13px;color:#7b8a97;margin-bottom:7px}
-.nss-card .val{font-size:26px;font-weight:600;line-height:1.15;font-variant-numeric:tabular-nums;min-height:34px;display:flex;align-items:center;white-space:nowrap}
-.nss-card .sub{font-size:12.5px;color:#8d9aa5;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#k-conn-sub,#k-mod-sub{font-family:monospace;font-size:12.5px;color:#607d8b;letter-spacing:.2px}
-/* 协议分解/引擎说明这类列表: 窄卡片里宁可折行也不要截断 */
-#k-conn-sub,#k-mod-sub{white-space:normal;overflow:visible;text-overflow:clip}
-.badge{display:inline-block;font-size:17px;font-weight:600;padding:2px 11px;border-radius:12px;background:#e8f5e9;color:#2e7d32}
-.badge.bad{background:#ffebee;color:#c62828}
-#k-fw{font-family:monospace;font-size:15px;font-weight:600;word-break:break-all;line-height:1.25}
-.nss-bar{height:7px;border-radius:4px;background:#eee;overflow:hidden;margin-top:9px}
-.nss-bar>i{display:block;height:100%;width:0;border-radius:4px;transition:width .45s ease,background .3s}
-.nss-panel{background:#fff;border:1px solid #e2e2e2;border-radius:10px;padding:13px 15px;margin-bottom:14px}
-.nss-panel h3{margin:0 0 9px;font-size:13px;font-weight:600;color:#333}
-.nss-panel h3 small{font-weight:400;color:#8d9aa5;font-size:12px;margin-left:6px}
-.pt{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid #f4f4f4}
+/* ---------- 主题变量: 默认亮色, .nss-dark / 系统暗色时切换 ----------
+   亮暗由页面 JS 读取 body 背景亮度决定(Argon 强制暗色时 dark.css 无媒体查询,
+   纯 CSS 媒体查询探测不到, 必须运行时判断); nss-light 用于"系统暗 + 主题亮"时纠偏 */
+#nss-wrap{
+	--acc: var(--primary, #5e72e4);
+	--acc-rgb: 94,114,228;               /* JS 按 --primary 实际值回填 */
+	--tx1: #00b8a9;
+	--card-bg: rgba(255,255,255,.78);
+	--card-solid: #fff;
+	--card-brd: rgba(17,24,39,.07);
+	--card-sh: 0 1px 2px rgba(17,24,39,.05), 0 10px 26px -14px rgba(17,24,39,.14);
+	--card-sh-h: 0 2px 6px rgba(17,24,39,.07), 0 16px 34px -14px rgba(17,24,39,.20);
+	--txt: #1f2937;
+	--mut: #6b7280;
+	--track: #eef1f6;
+	--gridline: rgba(17,24,39,.09);
+	--ok: #2e7d32;    --okbg: rgba(46,125,50,.10);
+	--bad: #c62828;   --badbg: rgba(198,40,40,.10);
+	--mono: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace;
+}
+#nss-wrap.nss-dark{
+	--card-bg: rgba(38,41,48,.78);
+	--card-solid: #262930;
+	--card-brd: rgba(255,255,255,.08);
+	--card-sh: 0 1px 2px rgba(0,0,0,.30), 0 10px 28px -14px rgba(0,0,0,.50);
+	--card-sh-h: 0 2px 6px rgba(0,0,0,.35), 0 16px 36px -14px rgba(0,0,0,.60);
+	--txt: #e5e7eb;
+	--mut: #9ca3af;
+	--track: rgba(255,255,255,.09);
+	--gridline: rgba(255,255,255,.10);
+	--ok: #66bb6a;    --okbg: rgba(102,187,106,.13);
+	--bad: #ef5350;   --badbg: rgba(239,83,80,.13);
+}
+@media (prefers-color-scheme: dark){
+	#nss-wrap:not(.nss-light){
+		--card-bg: rgba(38,41,48,.78);
+		--card-solid: #262930;
+		--card-brd: rgba(255,255,255,.08);
+		--card-sh: 0 1px 2px rgba(0,0,0,.30), 0 10px 28px -14px rgba(0,0,0,.50);
+		--card-sh-h: 0 2px 6px rgba(0,0,0,.35), 0 16px 36px -14px rgba(0,0,0,.60);
+		--txt: #e5e7eb;
+		--mut: #9ca3af;
+		--track: rgba(255,255,255,.09);
+		--gridline: rgba(255,255,255,.10);
+		--ok: #66bb6a;    --okbg: rgba(102,187,106,.13);
+		--bad: #ef5350;   --badbg: rgba(239,83,80,.13);
+	}
+}
+
+/* ---------- 头部 ---------- */
+.nss-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:2px 0 16px;flex-wrap:wrap}
+.nss-head h2{margin:0;font-weight:700}
+.nss-live{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--mut);padding-bottom:4px;white-space:nowrap}
+.nss-pulse{position:relative;width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
+.nss-pulse::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--ok);opacity:0;animation:nssPing 2s ease-out infinite}
+.nss-pulse.bad{background:var(--bad)}
+.nss-pulse.bad::after{border-color:var(--bad)}
+@keyframes nssPing{0%{transform:scale(.35);opacity:.75}70%{opacity:0}100%{transform:scale(1.5);opacity:0}}
+.nss-upd{color:var(--mut);opacity:.85;font-variant-numeric:tabular-nums}
+
+/* ---------- 指标卡片 ---------- */
+.nss-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:16px}
+@media (max-width:1080px){.nss-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:700px){.nss-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:460px){.nss-grid{grid-template-columns:1fr}}
+.nss-card{background:var(--card-bg);border:1px solid var(--card-brd);border-radius:14px;padding:15px 16px 14px;display:flex;flex-direction:column;min-width:0;box-shadow:var(--card-sh);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:transform .25s ease,box-shadow .25s ease}
+.nss-card:hover{transform:translateY(-2px);box-shadow:var(--card-sh-h)}
+.nss-card .top{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.nss-ico{width:28px;height:28px;border-radius:9px;background:rgba(var(--acc-rgb),.13);color:var(--acc);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.nss-ico svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.nss-card .lbl{font-size:12.5px;color:var(--mut);letter-spacing:.2px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nss-card .val{font-size:27px;font-weight:700;line-height:1.15;color:var(--txt);font-variant-numeric:tabular-nums;min-height:32px;display:flex;align-items:center;white-space:nowrap}
+.val.tick{animation:nssVal .45s ease}
+@keyframes nssVal{from{opacity:.25}to{opacity:1}}
+.nss-card .sub{font-size:12.5px;color:var(--mut);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* 协议分解这类列表: 窄卡片里宁可折行也不要截断 */
+.nss-card .sub.wrap{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.6}
+.nss-card .val .tag{font-size:11.5px;font-weight:500;color:var(--mut);margin-left:8px;align-self:flex-end;padding-bottom:4px;letter-spacing:.3px}
+#k-fw{font-family:var(--mono);font-size:16.5px;font-weight:600;letter-spacing:.2px;word-break:break-all;line-height:1.3}
+
+/* 状态徽标 (ECM) */
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:14.5px;font-weight:600;padding:5px 14px;border-radius:999px;background:var(--okbg);color:var(--ok)}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex:none}
+.pill.bad{background:var(--badbg);color:var(--bad)}
+
+/* CPU min~max 区间条 */
+.rng{position:relative;height:16px;margin:12px 0 2px}
+.rng .track{position:absolute;top:5px;left:0;right:0;height:6px;border-radius:3px;background:linear-gradient(90deg,rgba(67,160,71,.28),rgba(251,140,0,.20) 55%,rgba(229,57,53,.22))}
+.rng .span{position:absolute;top:5px;height:6px;border-radius:3px;background:rgba(var(--acc-rgb),.40);transition:left .45s ease,width .45s ease}
+.rng .dot{position:absolute;top:1px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:var(--acc);border:2px solid var(--card-solid);box-shadow:0 0 0 3px rgba(var(--acc-rgb),.20),0 1px 4px rgba(0,0,0,.25);transition:left .45s ease}
+.rng-ends{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:6px;white-space:nowrap}
+.rng-ends b{color:var(--txt);font-variant-numeric:tabular-nums;font-weight:600}
+
+/* ---------- 面板 ---------- */
+.nss-panel{background:var(--card-bg);border:1px solid var(--card-brd);border-radius:14px;padding:15px 17px;margin-bottom:16px;box-shadow:var(--card-sh);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.nss-panel h3{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:13px;font-weight:600;color:var(--txt);letter-spacing:.3px}
+.nss-panel h3 small{font-weight:400;color:var(--mut);font-size:12px}
+.nss-panel h3 .grow{flex:1}
+.chip{font-size:12px;font-weight:600;padding:3px 11px;border-radius:999px;background:rgba(var(--acc-rgb),.11);color:var(--acc);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chip.tick{animation:nssVal .45s ease}
+.lg{display:inline-flex;align-items:center;gap:5px;font-weight:400;color:var(--mut)}
+.lg i{width:14px;height:4px;border-radius:2px;display:inline-block}
+.lg.rx i{background:linear-gradient(90deg,rgba(var(--acc-rgb),.45),rgba(var(--acc-rgb),.95))}
+.lg.tx i{background:linear-gradient(90deg,rgba(0,184,169,.40),rgba(0,184,169,.92))}
+
+/* ---------- 网口速率 ---------- */
+.pt{display:flex;align-items:center;gap:12px;padding:9px 2px;border-bottom:1px dashed var(--gridline)}
 .pt:last-child{border-bottom:0}
-.pt .nm{width:50px;font-family:monospace;font-size:13px;color:#333}
-.pt .sp{width:74px;font-size:12px;color:#7b8a97;text-align:right}
-.pt .bars{flex:1;min-width:56px}
-.pt .bar{height:6px;background:#f2f2f2;border-radius:4px;overflow:hidden;margin:2px 0}
-.pt .bar>i{display:block;height:100%;width:0;border-radius:4px}
-.pt .rt{width:112px;font-size:12px;font-family:monospace;color:#455a64;text-align:right;line-height:1.5;font-variant-numeric:tabular-nums}
-.nss-note{font-size:13px;color:#607d8b;line-height:1.85}
-.nss-card .val .tag{font-size:12px;font-weight:400;color:#9aa7b2;margin-left:8px;align-self:flex-end;padding-bottom:3px}
-.rng{position:relative;height:20px;margin-top:10px}
-.rng .track{position:absolute;top:8px;left:0;right:0;height:4px;background:#e3e8eb;border-radius:2px}
-.rng .span{position:absolute;top:8px;height:4px;background:#90caf9;border-radius:2px;transition:left .45s ease,width .45s ease}
-.rng .dot{position:absolute;top:3px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#1976d2;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.28);transition:left .45s ease}
-.rng-ends{display:flex;gap:14px;font-size:12.5px;color:#8d9aa5;margin-top:4px;white-space:nowrap}
-.rng-ends b{color:#37474f;font-variant-numeric:tabular-nums;font-weight:600}
+/* 断开的网口整行压暗, 免得空轨道看着像"有一点流量" */
+.pt.down .pt-speed,.pt.down .pt-bars,.pt.down .pt-rate{opacity:.5}
+.pt-name{width:86px;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;font-weight:600;color:var(--txt)}
+.pt-dot{width:8px;height:8px;border-radius:50%;background:#c3c9d1;flex:none}
+.nss-dark .pt-dot{background:#565b64}
+.pt-dot.up{background:var(--ok);box-shadow:0 0 0 3px var(--okbg)}
+.pt-speed{width:72px;font-size:12px;color:var(--mut);text-align:right;font-variant-numeric:tabular-nums}
+.pt-bars{flex:1;min-width:56px;display:flex;flex-direction:column;gap:4px}
+.pt-bar{height:5px;border-radius:3px;background:var(--track);overflow:hidden}
+.pt-bar i{display:block;height:100%;width:0;border-radius:3px;transition:width .7s cubic-bezier(.22,.61,.36,1)}
+.pt-bar i.rx{background:linear-gradient(90deg,rgba(var(--acc-rgb),.45),rgba(var(--acc-rgb),.95))}
+.pt-bar i.tx{background:linear-gradient(90deg,rgba(0,184,169,.40),rgba(0,184,169,.92))}
+.pt-rate{width:116px;display:flex;flex-direction:column;align-items:flex-end;font-family:var(--mono);font-size:12px;line-height:1.65;font-variant-numeric:tabular-nums}
+.pt-rate .rc{color:var(--acc)}
+.pt-rate .tc{color:var(--tx1)}
+
+/* ---------- 说明(折叠) ---------- */
+.nss-note{background:var(--card-bg);border:1px solid var(--card-brd);border-radius:14px;box-shadow:var(--card-sh);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);overflow:hidden}
+.nss-note summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:9px;padding:13px 17px;font-size:13px;font-weight:600;color:var(--txt);user-select:none}
+.nss-note summary::-webkit-details-marker{display:none}
+.nss-note summary svg{stroke:var(--mut)}
+.nss-note summary .chev{margin-left:auto;transition:transform .25s ease;color:var(--mut)}
+.nss-note[open] summary{border-bottom:1px dashed var(--gridline)}
+.nss-note[open] summary .chev{transform:rotate(90deg)}
+.nss-note-body{padding:4px 17px 14px;font-size:12.8px;color:var(--mut);line-height:1.9}
+.nss-note-body p{margin:7px 0}
+.nss-note-body b{color:var(--txt);font-weight:600}
+.nss-note-body code{font-family:var(--mono);font-size:12px;background:var(--track);color:var(--txt);padding:1px 6px;border-radius:5px}
 </style>
 
 <div class="nss-grid">
   <div class="nss-card">
-    <div class="lbl">加速连接数</div>
+    <div class="top">
+      <span class="nss-ico"><svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
+      <div class="lbl">加速连接数</div>
+    </div>
     <div class="val" id="k-conn">–</div>
-    <div class="sub" id="k-conn-sub">ECM 卸载到硬件的会话</div>
+    <div class="sub wrap" id="k-conn-sub">ECM 卸载到硬件的会话</div>
   </div>
+
   <div class="nss-card">
-    <div class="lbl">NSS CPU 负载</div>
+    <div class="top">
+      <span class="nss-ico"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></svg></span>
+      <div class="lbl">NSS CPU 负载</div>
+    </div>
     <div class="val"><span id="k-cpu">–</span><span class="tag">驱动上报</span></div>
     <div class="rng">
       <div class="track"></div>
@@ -59,55 +174,143 @@
       <span>最高 <b id="k-cpu-max">–</b></span>
     </div>
   </div>
+
   <div class="nss-card">
-    <div class="lbl">NSS↔主机吞吐</div>
+    <div class="top">
+      <span class="nss-ico"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+      <div class="lbl">NSS↔主机吞吐</div>
+    </div>
     <div class="val"><span id="k-nss">–</span></div>
     <div class="sub" id="k-nss-rx">↓ –</div>
     <div class="sub" id="k-nss-tx">↑ –</div>
     <div class="sub" id="k-nss-pps">–</div>
   </div>
+
   <div class="nss-card">
-    <div class="lbl">ECM 引擎模块</div>
-    <div class="val"><span class="badge" id="k-mod">–</span></div>
-    <div class="sub" id="k-mod-sub">读取中…</div>
+    <div class="top">
+      <span class="nss-ico"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></span>
+      <div class="lbl">ECM 引擎模块</div>
+    </div>
+    <div class="val"><span class="pill" id="k-mod"><span class="dot"></span><span id="k-mod-txt">–</span></span></div>
+    <div class="sub wrap" id="k-mod-sub">读取中…</div>
   </div>
+
   <div class="nss-card">
-    <div class="lbl">NSS 固件</div>
-    <div class="val"><span id="k-fw">–</span></div>
+    <div class="top">
+      <span class="nss-ico"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>
+      <div class="lbl">NSS 固件</div>
+    </div>
+    <div class="val" id="k-fw">–</div>
     <div class="sub" id="k-fw-full">–</div>
     <div class="sub" id="k-fw-pkg">打包版本 –</div>
   </div>
 </div>
 
 <div class="nss-panel">
-  <h3>加速连接数趋势<small>最近 60 秒</small></h3>
-  <canvas id="nss-chart" style="width:100%;height:120px;display:block"></canvas>
+  <h3>加速连接数趋势
+    <small>最近 60 秒</small>
+    <span class="grow"></span>
+    <span class="chip" id="nss-chart-now">–</span>
+  </h3>
+  <canvas id="nss-chart" style="width:100%;height:130px;display:block"></canvas>
 </div>
 
 <div class="nss-panel">
-  <h3>网口实时速率<small>每 2 秒刷新</small></h3>
-  <div id="nss-ports"><div style="color:#aaa;font-size:12px">读取中…</div></div>
+  <h3>网口实时速率
+    <small>每 2 秒刷新</small>
+    <span class="grow"></span>
+    <span class="lg rx"><i></i>接收</span>
+    <span class="lg tx"><i></i>发送</span>
+  </h3>
+  <div id="nss-ports"><div style="color:var(--mut);font-size:12px">读取中…</div></div>
 </div>
 
-<div class="nss-panel nss-note">
-  NSS 由 ECM 引擎自动接管加速，无需在防火墙页开启「流量分载」。<br>
-  <b>加速连接数</b>是唯一可直接读到的加速指标：实测随转发流量增长（22→37），持续增长即表示转发在走硬件。<br>
-  <b>NSS↔主机吞吐</b>取自 n2h 计数，统计的是需要交给主机处理的包（未走快路径）；
-  已完全卸载到硬件的快路径包不经过主机，也不产生字节计数，因此固件层读不到「加速吞吐」本身。<br>
-  <span style="color:#9e9e9e">注：<b>CPU 负载</b>为驱动上报值。实测加压 10MB/s 转发时该值仍恒为 8%（min/avg/max 完全相同）——
-  NSS 固件未上报指令数，<code>nss_freq_compute_cpu_usage()</code> 在 <code>inst_cnt==0</code> 时直接返回，
-  数值停在开机初值，本版本仅供参考。</span>
-</div>
+<details class="nss-note">
+  <summary>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    工作原理与说明
+    <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+  </summary>
+  <div class="nss-note-body">
+    <p>NSS 由 ECM 引擎自动接管加速，无需在防火墙页开启「流量分载」。</p>
+    <p><b>加速连接数</b>是唯一可直接读到的加速指标：实测随转发流量增长（22→37），持续增长即表示转发在走硬件。</p>
+    <p><b>NSS↔主机吞吐</b>取自 n2h 计数，统计的是需要交给主机处理的包（未走快路径）；
+    已完全卸载到硬件的快路径包不经过主机，也不产生字节计数，因此固件层读不到「加速吞吐」本身。</p>
+    <p style="opacity:.75">注：<b>CPU 负载</b>为驱动上报值。实测加压 10MB/s 转发时该值仍恒为 8%（min/avg/max 完全相同）——
+    NSS 固件未上报指令数，<code>nss_freq_compute_cpu_usage()</code> 在 <code>inst_cnt==0</code> 时直接返回，
+    数值停在开机初值，本版本仅供参考。</p>
+  </div>
+</details>
+</div><!-- /nss-wrap -->
 
 <script type="text/javascript">
 (function () {
 	var INTERVAL = 2000, MAXPTS = 30;
 	var hist = [], prev = {}, timer = null;
+	var W = document.getElementById('nss-wrap');
 	/* 必须用绝对路径: LuCI 菜单给的页面地址结尾没有斜杠, 相对路径 "data" 会被
 	   解析成 /admin/status/data (少一段 nssstatus) 而 404 */
 	var URL_DATA = '<%=luci.dispatcher.build_url("admin", "status", "nssstatus", "data")%>';
 
 	function el(id) { return document.getElementById(id); }
+
+	/* ---------- 主题适配: 读 body 背景亮度决定明暗, 并把 --primary 拆成 RGB 供 rgba(var()) 用 ---------- */
+	var THEME = {};
+	function toRGB(c) {
+		c = (c || '').trim();
+		var m;
+		if (c.charAt(0) === '#') {
+			var h = c.slice(1);
+			if (h.length === 3) h = h.replace(/./g, function (x) { return x + x; });
+			m = h.match(/^(..)(..)(..)$/);
+			if (m) return [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+		}
+		m = c.match(/^rgba?\(([^)]+)\)/);
+		if (m) {
+			var p = m[1].split(',').map(Number);
+			if (p.length >= 3) return [p[0], p[1], p[2]];
+		}
+		return null;
+	}
+	function solidBG(node) {
+		var c = getComputedStyle(node).backgroundColor;
+		var rgb = toRGB(c);
+		if (!rgb) return null;
+		/* 半透明背景说明底色不是它定的, 继续往上找 */
+		var t = c.match(/[\d.]+/g);
+		if (/rgba\(/.test(c) && t && t.length >= 4 && parseFloat(t[3]) < 0.5) return null;
+		return rgb;
+	}
+	function cssVar(n) { return getComputedStyle(W).getPropertyValue(n).trim(); }
+	function syncTheme() {
+		var bg = solidBG(document.body) || solidBG(document.documentElement) || [255, 255, 255];
+		var dark = (0.2126 * bg[0] + 0.7152 * bg[1] + 0.0722 * bg[2]) / 255 < 0.45;
+		W.classList.toggle('nss-dark', dark);
+		W.classList.toggle('nss-light', !dark);
+		var acc = toRGB(getComputedStyle(document.body).getPropertyValue('--primary') || '') || [94, 114, 228];
+		W.style.setProperty('--acc-rgb', acc.join(','));
+		THEME.acc = cssVar('--acc') || '#5e72e4';
+		THEME.accRGB = acc;
+		THEME.txt = cssVar('--txt') || '#1f2937';
+		THEME.mut = cssVar('--mut') || '#6b7280';
+		THEME.grid = cssVar('--gridline') || 'rgba(17,24,39,.09)';
+	}
+	syncTheme();
+
+	function rgba(a, alpha) {
+		var c = THEME.accRGB || [94, 114, 228];
+		return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')';
+	}
+
+	/* 值变化时给个轻微淡入, 提示"这个数刚更新" */
+	function setTxt(id, txt) {
+		var e = el(id);
+		if (!e || e.textContent === txt) return;
+		e.textContent = txt;
+		e.classList.remove('tick');
+		void e.offsetWidth;
+		e.classList.add('tick');
+	}
 
 	function fmtRate(bps) {
 		if (bps >= 1048576) return (bps / 1048576).toFixed(2) + ' MB/s';
@@ -115,12 +318,13 @@
 		return Math.round(bps) + ' B/s';
 	}
 
-	function cpuColor(p) { return p < 50 ? '#43a047' : (p < 80 ? '#fb8c00' : '#e53935'); }
+	function cpuColor(p) { return p < 50 ? 'var(--ok)' : (p < 80 ? '#fb8c00' : 'var(--bad)'); }
 
+	/* ---------- 趋势图: 渐变面积 + 均值虚线 + 端点呼吸点 ---------- */
 	function drawChart() {
 		var c = el('nss-chart');
 		if (!c) return;
-		var w = c.clientWidth, h = c.clientHeight || 120;
+		var w = c.clientWidth, h = c.clientHeight || 130;
 		if (w <= 0) return;
 		var dpr = window.devicePixelRatio || 1;
 		if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) {
@@ -133,18 +337,20 @@
 
 		var top = 16, bot = h - 16;
 
-		g.strokeStyle = '#f0f0f0';
+		/* 虚线网格 */
+		g.strokeStyle = THEME.grid;
 		g.lineWidth = 1;
+		g.setLineDash([3, 4]);
 		for (var i = 1; i < 4; i++) {
 			var gy = top + (bot - top) * i / 4;
 			g.beginPath(); g.moveTo(0, gy); g.lineTo(w, gy); g.stroke();
 		}
-		g.strokeStyle = '#e4e4e4';
+		g.setLineDash([]);
 		g.beginPath(); g.moveTo(0, bot); g.lineTo(w, bot); g.stroke();
 
 		/* 数据点不足时不要画成一条孤立色带, 给个明确提示 */
 		if (hist.length < 2) {
-			g.fillStyle = '#b0bec5';
+			g.fillStyle = THEME.mut;
 			g.font = '12px sans-serif';
 			g.textAlign = 'center';
 			g.fillText('数据积累中…（每 2 秒采样，共 30 点）', w / 2, (top + bot) / 2 + 4);
@@ -152,51 +358,77 @@
 			return;
 		}
 
-		var mx = 1;
-		for (var j = 0; j < hist.length; j++) if (hist[j] > mx) mx = hist[j];
+		var mx = 1, sum = 0;
+		for (var j = 0; j < hist.length; j++) { if (hist[j] > mx) mx = hist[j]; sum += hist[j]; }
+		var avg = sum / hist.length;
 
 		function px(i) { return w * i / (MAXPTS - 1); }
 		function py(v) { return bot - (bot - top) * (v / mx); }
 
+		/* 面积: 端到端线性渐变 */
+		var grad = g.createLinearGradient(0, top, 0, bot);
+		grad.addColorStop(0, rgba(0, 0.22));
+		grad.addColorStop(1, rgba(0, 0));
 		g.beginPath();
 		g.moveTo(px(0), bot);
 		for (var k = 0; k < hist.length; k++) g.lineTo(px(k), py(hist[k]));
 		g.lineTo(px(hist.length - 1), bot);
 		g.closePath();
-		g.fillStyle = 'rgba(25,118,210,0.10)';
+		g.fillStyle = grad;
 		g.fill();
 
+		/* 均值虚线 */
+		g.strokeStyle = THEME.mut;
+		g.globalAlpha = 0.55;
+		g.lineWidth = 1;
+		g.setLineDash([5, 5]);
+		g.beginPath(); g.moveTo(0, py(avg)); g.lineTo(w, py(avg)); g.stroke();
+		g.setLineDash([]);
+		g.globalAlpha = 1;
+
+		/* 主线 */
 		g.beginPath();
 		for (var m = 0; m < hist.length; m++) {
 			if (m) g.lineTo(px(m), py(hist[m])); else g.moveTo(px(m), py(hist[m]));
 		}
-		g.strokeStyle = '#1976d2';
+		g.strokeStyle = THEME.acc;
 		g.lineWidth = 2;
 		g.lineJoin = 'round';
+		g.lineCap = 'round';
 		g.stroke();
 
-		/* 点少时把采样点画出来, 否则看着像一条悬空的横线 */
-		if (hist.length <= 12) {
-			g.fillStyle = '#1976d2';
-			for (var d = 0; d < hist.length; d++) {
-				g.beginPath();
-				g.arc(px(d), py(hist[d]), 2.6, 0, Math.PI * 2);
-				g.fill();
-			}
-		}
+		/* 端点: 光环 + 实心点 */
+		var lx = px(hist.length - 1), ly = py(hist[hist.length - 1]);
+		g.fillStyle = rgba(0, 0.18);
+		g.beginPath(); g.arc(lx, ly, 7, 0, Math.PI * 2); g.fill();
+		g.fillStyle = THEME.acc;
+		g.beginPath(); g.arc(lx, ly, 3, 0, Math.PI * 2); g.fill();
 
-		g.fillStyle = '#90a4ae';
-		g.font = '11px monospace';
-		g.textAlign = 'right';
-		g.fillText('峰值 ' + mx, w - 2, 12);
+		/* 左上峰值 / 左下零点(均值放标题右侧芯片, 画布内不挤) */
+		g.fillStyle = THEME.mut;
+		g.font = '11px ' + (THEME.monoFont || 'monospace');
 		g.textAlign = 'left';
-		g.fillText('0', 2, bot - 4);
+		g.fillText('峰值 ' + mx, 4, 11);
+		g.fillText('0', 4, bot + 11);
 	}
 
+	/* ---------- 网口速率: 行只建一次, 后续仅改宽度, 让 CSS transition 生效 ---------- */
+	var portRows = {};
+	function fmtSpeed(s) { return s > 0 ? (s >= 1000 ? (s / 1000) + ' Gbps' : s + ' Mbps') : '—'; }
+	function buildRow(name) {
+		var r = document.createElement('div');
+		r.className = 'pt';
+		r.innerHTML =
+			'<div class="pt-name"><span class="pt-dot"></span>' + name + '</div>' +
+			'<div class="pt-speed">–</div>' +
+			'<div class="pt-bars"><div class="pt-bar"><i class="rx"></i></div><div class="pt-bar"><i class="tx"></i></div></div>' +
+			'<div class="pt-rate"><span class="rc">↓ –</span><span class="tc">↑ –</span></div>';
+		return r;
+	}
 	function renderPorts(ports) {
 		var box = el('nss-ports');
 		if (!box) return;
-		var maxr = 1, rates = [];
+		var maxr = 1, rates = {};
 
 		for (var i = 0; i < ports.length; i++) {
 			var p = ports[i], o = prev[p.name], r = { rx: 0, tx: 0 };
@@ -207,24 +439,37 @@
 			prev[p.name] = { rx: p.rx, tx: p.tx };
 			if (r.rx > maxr) maxr = r.rx;
 			if (r.tx > maxr) maxr = r.tx;
-			rates.push(r);
+			rates[p.name] = r;
 		}
 
-		var html = '';
+		/* 首次渲染时清掉占位提示 */
+		if (box.childElementCount && !box.firstElementChild.className) box.innerHTML = '';
+		var seen = {};
 		for (var k = 0; k < ports.length; k++) {
-			var q = ports[k], rr = rates[k];
-			var sp = q.speed > 0 ? (q.speed >= 1000 ? (q.speed / 1000) + ' Gbps' : q.speed + ' Mbps') : '—';
-			html += '<div class="pt">' +
-				'<div class="nm">' + q.name + '</div>' +
-				'<div class="sp"><span style="color:' + (q.up ? '#43a047' : '#ccc') + '">●</span> ' + sp + '</div>' +
-				'<div class="bars">' +
-					'<div class="bar"><i style="background:#1976d2;width:' + (rr.rx / maxr * 100).toFixed(1) + '%"></i></div>' +
-					'<div class="bar"><i style="background:#00897b;width:' + (rr.tx / maxr * 100).toFixed(1) + '%"></i></div>' +
-				'</div>' +
-				'<div class="rt">↓ ' + fmtRate(rr.rx) + '<br>↑ ' + fmtRate(rr.tx) + '</div>' +
-				'</div>';
+			var q = ports[k], rr = rates[q.name];
+			seen[q.name] = 1;
+			var row = portRows[q.name];
+			if (!row) {
+				row = buildRow(q.name);
+				box.appendChild(row);
+				portRows[q.name] = row;
+			}
+			row.querySelector('.pt-dot').className = 'pt-dot' + (q.up ? ' up' : '');
+			row.classList.toggle('down', !q.up);
+			var sp = row.querySelector('.pt-speed');
+			if (sp.textContent !== fmtSpeed(q.speed)) sp.textContent = fmtSpeed(q.speed);
+			row.querySelector('.pt-bar i.rx').style.width = Math.min(100, rr.rx / maxr * 100).toFixed(1) + '%';
+			row.querySelector('.pt-bar i.tx').style.width = Math.min(100, rr.tx / maxr * 100).toFixed(1) + '%';
+			var rc = row.querySelector('.pt-rate .rc'), tc = row.querySelector('.pt-rate .tc');
+			var rt = '↓ ' + fmtRate(rr.rx), tt = '↑ ' + fmtRate(rr.tx);
+			if (rc.textContent !== rt) rc.textContent = rt;
+			if (tc.textContent !== tt) tc.textContent = tt;
 		}
-		box.innerHTML = html || '<div style="color:#aaa;font-size:12px">没有检测到物理网口</div>';
+		/* 网口消失(如拔掉 USB 网卡)时清掉旧行 */
+		for (var nm in portRows) {
+			if (!seen[nm]) { portRows[nm].parentNode.removeChild(portRows[nm]); delete portRows[nm]; }
+		}
+		if (!ports.length) box.innerHTML = '<div style="color:var(--mut);font-size:12px">没有检测到物理网口</div>';
 	}
 
 	function poll() {
@@ -233,33 +478,32 @@
 		xhr.onreadystatechange = function () {
 			if (xhr.readyState !== 4) return;
 			if (xhr.status !== 200) {
+				var pu = el('nss-pulse');
+				if (pu) pu.className = 'nss-pulse bad';
 				var s = el('k-mod-sub');
-				if (s) {
-					s.textContent = '读取失败 (HTTP ' + xhr.status + ')';
-					s.style.color = '#e53935';
-				}
+				if (s) { s.textContent = '读取失败 (HTTP ' + xhr.status + ')'; s.style.color = 'var(--bad)'; }
 				var box = el('nss-ports');
-				if (box) {
-					box.innerHTML = '<div style="color:#c62828;font-size:12px">' +
-						'取数失败 (HTTP ' + xhr.status + ') 于 ' + URL_DATA + '</div>';
-				}
+				if (box) box.innerHTML = '<div style="color:var(--bad);font-size:12px">取数失败 (HTTP ' + xhr.status + ') 于 ' + URL_DATA + '</div>';
 				if (timer) clearInterval(timer);
 				return;
 			}
 			var d;
 			try { d = JSON.parse(xhr.responseText); } catch (e) { return; }
 
-			el('k-conn').textContent = d.conn;
+			syncTheme();
+
+			setTxt('k-conn', String(d.conn));
 			var cs = el('k-conn-sub');
 			if (cs) {
-				cs.textContent = 'TCP ' + (d.conn_tcp || 0) + ' · UDP ' + (d.conn_udp || 0)
-					+ ' · 其他 ' + (d.conn_other || 0);
+				var ct = 'TCP ' + (d.conn_tcp || 0) + ' · UDP ' + (d.conn_udp || 0) + ' · 其他 ' + (d.conn_other || 0);
+				if (cs.textContent !== ct) cs.textContent = ct;
 			}
 
 			/* 驱动上报的调频负载: Min/Avg/Max 顺序, Avg 取第二个 (nss_core.h:816) */
 			var cpu = d.nss_cpu;
-			el('k-cpu').textContent = cpu >= 0 ? cpu + '%' : '—';
-			el('k-cpu').style.color = cpu >= 0 ? cpuColor(Math.min(cpu, 100)) : '';
+			var kc = el('k-cpu');
+			kc.textContent = cpu >= 0 ? cpu + '%' : '—';
+			kc.style.color = cpu >= 0 ? cpuColor(Math.min(cpu, 100)) : '';
 			if (d.nss_cpu_min >= 0 && d.nss_cpu_max >= 0) {
 				el('k-cpu-min').textContent = d.nss_cpu_min + '%';
 				el('k-cpu-max').textContent = d.nss_cpu_max + '%';
@@ -277,10 +521,10 @@
 			if (prev.nssAt) {
 				var dt = (Date.now() - prev.nssAt) / 1000;
 				if (dt > 0.5 && nssNow >= prev.nssNow) {
-					el('k-nss').textContent = fmtRate((nssNow - prev.nssNow) / dt);
-					el('k-nss-pps').textContent = Math.round((nssPkts - prev.nssPkts) / dt) + ' 包/秒';
-					el('k-nss-rx').textContent = '↓ ' + fmtRate((nssRx - prev.nssRx) / dt);
-					el('k-nss-tx').textContent = '↑ ' + fmtRate((nssTx - prev.nssTx) / dt);
+					setTxt('k-nss', fmtRate((nssNow - prev.nssNow) / dt));
+					setTxt('k-nss-pps', Math.round((nssPkts - prev.nssPkts) / dt) + ' 包/秒');
+					setTxt('k-nss-rx', '↓ ' + fmtRate((nssRx - prev.nssRx) / dt));
+					setTxt('k-nss-tx', '↑ ' + fmtRate((nssTx - prev.nssTx) / dt));
 				}
 			}
 			prev.nssAt = Date.now();
@@ -290,28 +534,34 @@
 			var sub = el('k-mod-sub');
 			var ok = d.ecm_mods > 0;
 			/* ecm 模块名唯一(nss 生态里只有 ecm.ko 以 ecm 命名), 显示计数会让人困惑,
-			   直接给状态徽标更清楚; 用 class 切换配色, 避免内联样式覆盖 */
-			el('k-mod').textContent = ok ? '已加载' : '未加载';
-			el('k-mod').className = ok ? 'badge' : 'badge bad';
+			   直接给状态徽标更清楚 */
+			setTxt('k-mod-txt', ok ? '已加载' : '未加载');
+			el('k-mod').className = 'pill' + (ok ? '' : ' bad');
 			sub.textContent = ok ? 'ecm 引擎 · 加速生效' : '硬件加速不可用';
-			sub.style.color = ok ? '#2e7d32' : '#c62828';
+			sub.style.color = ok ? 'var(--ok)' : 'var(--bad)';
 
 			/* 完整标识太长(20字符)会撑破卡片: 大字只放版本号本体, 完整串放小字行 */
 			var fwFull = d.fwreal || '';
 			var fwCore = fwFull ? fwFull.replace(/^NSS\.CP\./, '').replace(/-R$/, '') : '';
-			el('k-fw').textContent = fwCore || fwFull || d.fw || '–';
+			setTxt('k-fw', fwCore || fwFull || d.fw || '–');
 			var fwf = el('k-fw-full');
-			if (fwf) fwf.textContent = fwFull || '–';
+			if (fwf && fwf.textContent !== (fwFull || '–')) fwf.textContent = fwFull || '–';
 			var fwp = el('k-fw-pkg');
-			if (fwp) fwp.textContent = '打包版本 ' + (d.fw || '?');
+			if (fwp) {
+				var pt2 = '打包版本 ' + (d.fw || '?');
+				if (fwp.textContent !== pt2) fwp.textContent = pt2;
+			}
 
 			hist.push(d.conn);
 			while (hist.length > MAXPTS) hist.shift();
+			var s2 = 0;
+			for (var q2 = 0; q2 < hist.length; q2++) s2 += hist[q2];
+			setTxt('nss-chart-now', '当前 ' + d.conn + ' · 均值 ' + (s2 / hist.length).toFixed(1));
 			drawChart();
 			renderPorts(d.ports || []);
 
 			var upd = el('nss-upd');
-			if (upd) upd.textContent = ' · 更新于 ' + new Date().toTimeString().slice(0, 8);
+			if (upd) upd.textContent = '· 更新于 ' + new Date().toTimeString().slice(0, 8);
 		};
 		xhr.send(null);
 	}
